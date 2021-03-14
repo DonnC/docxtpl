@@ -148,7 +148,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
 
     var r = await docxTpl.parseDocxTpl();
-    print(r.mergeStatus);
+    print(r.mergeStatus == MergeResponseStatus.Success);
     print(r.message);
 
     var fields = docxTpl.getMergeFields();
