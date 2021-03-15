@@ -114,9 +114,11 @@ Api changes are available on [CHANGELOG](CHANGELOG.md)
 
 
 ## references
+- A detailed article about .docx word documents [READ HERE](https://www.toptal.com/xml/an-informal-introduction-to-docx)
 - `docxtpl` is a inspiration from python libraries that does almost the same i.e word document templating. It is inspired mainly from [python-docx-template](https://github.com/elapouya/python-docx-template) and [docx-mailmerge](https://github.com/Bouke/docx-mailmerge).
 - A detailed article on how [docx-mailmerge](https://pbpython.com/python-word-template.html) works (`python`)
 - Jinja2 templating [jinja](https://palletsprojects.com/p/jinja/)
+
 
 ## Getting Started
 
