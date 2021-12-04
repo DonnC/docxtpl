@@ -2,6 +2,9 @@
 
 a word document template plugin to easily populate and generate word documents from templates
 
+
+### dev
+run test/lib_test.dart to test
 ## screenshots
 <table>
    <tr>

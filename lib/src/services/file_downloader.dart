@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 
@@ -30,19 +29,16 @@ Future docxRemoteFileDownloader(String directory, String docxUrl) async {
   }
 }
 
-Future saveAssetTpl(String directory, String assetPath) async {
+Future saveAssetTpl(String directory, List<int> fileBytes) async {
   final String _templateFile = 'docxtpl.docx';
 
   try {
     final docxPath = path.join(directory, _templateFile);
 
-    var assetTpl = await rootBundle.load(assetPath);
-    var bytes = assetTpl.buffer.asUint8List();
-
     // save to temp dir temporarily
     File tplFile = File(docxPath);
 
-    await tplFile.writeAsBytes(bytes);
+    await tplFile.writeAsBytes(fileBytes);
 
     return tplFile;
   }

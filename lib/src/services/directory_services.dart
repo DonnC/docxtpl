@@ -1,9 +1,10 @@
 import 'dart:io';
+import 'package:docxtpl/src/docx_constants.dart';
 import 'package:path/path.dart' as path;
 
 /// loop through temp dir and search for file
 /// if file present return its File object
-Future<File> searchDir(Directory dir, String fileSegment) async {
+Future<File?> searchDir(Directory dir, String fileSegment) async {
   // file seperator differs
   // adopt to system's seperator
   var seperator = path.separator;
@@ -36,6 +37,8 @@ Future<void> deleteTempDir(var dir) async {
 
 /// grab system temp directory
 Directory tempDir() {
-  Directory tempDir = Directory.systemTemp.createTempSync('.docxtpl');
+  Directory tempDir = isTestMode
+      ? Directory.current
+      : Directory.systemTemp.createTempSync('.docxtpl');
   return tempDir;
 }

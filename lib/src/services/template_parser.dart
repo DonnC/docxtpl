@@ -1,7 +1,7 @@
 /// parse the simple jinja2-like template from element tag text
 /// {{...}}
-List<String> templateParse(String text) {
-  List<String> fields = [];
+List<String?> templateParse(String text) {
+  List<String?> fields = [];
 
   final RegExp re = RegExp(
     '{{\\w*}}',
@@ -19,11 +19,11 @@ List<String> templateParse(String text) {
   else {
     for (var match in matches) {
       int group = match.groupCount;
-      String field = match.group(group);
+      String? field = match.group(group);
 
       // remove templating braces
-      var firstChunk = field.replaceAll('{{', '').trim();
-      var secChunk = firstChunk.replaceAll('}}', '').trim();
+      var firstChunk = field?.replaceAll('{{', '').trim();
+      var secChunk = firstChunk?.replaceAll('}}', '').trim();
 
       fields.add(secChunk);
     }

@@ -1,6 +1,6 @@
+import 'dart:developer';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:archive/archive.dart';
 import 'package:archive/archive_io.dart';
 import 'package:xml/xml.dart';
@@ -22,14 +22,16 @@ class DocxTpl {
   /// indicate whether [docxTemplate] is from flutter assets folder
   final bool isAssetFile;
 
+  final bool autoClean;
+
   /// internal zip file object of the read .docx file
-  Archive _zip;
+  late Archive _zip;
 
   /// hold docxFile obj
-  File _docxFile;
+  late File _docxFile;
 
   /// hold temp directory path
-  Directory _dir;
+  late Directory _dir;
 
   /// hold xml document
   Map<dynamic, XmlDocument> _parts = Map<dynamic, XmlDocument>();
@@ -37,35 +39,34 @@ class DocxTpl {
   List<XmlElement> _instrTextChildren = [];
 
   /// hold merge fields extracted from the document
-  List<String> mergedFields = [];
+  List<String?> mergedFields = [];
 
   var _settings;
 
   var _settingsInfo;
 
   DocxTpl({
-    this.docxTemplate,
+    required this.docxTemplate,
     this.isAssetFile: false,
     this.isRemoteFile: false,
+    this.autoClean: false,
   }) {
     // get temp dir and save it once
     _dir = tempDir();
   }
 
-  // TODO: isAssetFile != isRemoteFile
-
   // ignore: always_declare_return_types
   Future<List> __getTreeOfFile(XmlElement file) async {
-    var type = file.getAttribute('PartName');
+    String? type = file.getAttribute('PartName');
 
-    var innerFile = type.replaceFirst('/', '');
+    var innerFile = type?.replaceFirst('/', '');
 
-    var zi = _zip.findFile(innerFile);
+    final ArchiveFile? zi = _zip.findFile(innerFile!);
 
-    final ziFileData = zi.content as List<int>;
+    var ziFileData = zi?.content as List<int>;
 
     // save file temporarily
-    var ziFilename = path.join(_dir.path, zi.name);
+    var ziFilename = path.join(_dir.path, zi?.name);
     var ziFile = await File(ziFilename).create(recursive: true);
 
     await ziFile.writeAsBytes(ziFileData);
@@ -78,9 +79,7 @@ class DocxTpl {
   }
 
   /// get all extracted merge fields from .docx to use to fill data in
-  List<String> getMergeFields() {
-    return mergedFields.toSet().toList();
-  }
+  List<String?> getMergeFields() => mergedFields.toSet().toList();
 
   /// write all changes and save, returns String path to file
   Future<String> save(String filepath) async {
@@ -95,7 +94,6 @@ class DocxTpl {
       var ziName = zi.name;
 
       // search for file and return its file object
-      //print('===== directory: ${_dir.path} | ziName: $ziName');
       var _file = await searchDir(_dir, ziName);
 
       if (_file != null) {
@@ -107,15 +105,15 @@ class DocxTpl {
     zipF.close();
 
     // clean up
-    await deleteTempDir(_dir);
+    if (autoClean) {
+      await deleteTempDir(_dir);
+    }
 
     return zipF.zip_path;
   }
 
   /// write all fields with provided data
-  Future<void> writeMergeFields({@required Map<String, dynamic> data}) async {
-    // TODO: Validate data keys must be equal and same with [mergedFields] values
-
+  Future<void> writeMergeFields({required Map<String, dynamic> data}) async {
     // get all merge fields extracted and replace with user data
     var fields = getMergeFields();
 
@@ -145,18 +143,17 @@ class DocxTpl {
 
     // grab any element's root note and save to disk
 
-    // TODO: First check if file exists in dir and override it
     // grab the root document already changed by calling [element.innerText] = '<new-data>' while replacing fields above
     var documentXmlRootDoc = elementTags.first.root.root.document;
 
     // grab xml as is without pretty printed
-    var xml = documentXmlRootDoc.toXmlString();
+    var xml = documentXmlRootDoc?.toXmlString();
 
     // write document to temp dir file
     var docXml = path.join(_dir.path, 'word', 'document.xml');
 
     File _docXmlFile = await File(docXml).create(recursive: true);
-    await _docXmlFile.writeAsString(xml);
+    await _docXmlFile.writeAsString(xml!);
   }
 
   /// process word document template passed, if [isRemoteFile] is true, it downloads to temp dir and processes the file
@@ -178,22 +175,20 @@ class DocxTpl {
         }
       }
 
-      if (isAssetFile) {
-        var result = await saveAssetTpl(_dir.path, docxTemplate);
+      // if (isAssetFile) {
+      //   var result = await saveAssetTpl(_dir.path, docxTemplate);
 
-        if (result is File) {
-          // template loaded successfuly
-          _docxFile = result;
-        }
+      //   if (result is File) {
+      //     // template loaded successfuly
+      //     _docxFile = result;
+      //   }
 
-        // error loading asset tpl file
-        else {
-          throw Exception('error loading asset .docx template file: ' + result);
-        }
-      }
+      //   // error loading asset tpl file
+      //   else {
+      //     throw Exception('error loading asset .docx template file: ' + result);
+      //   }
+      // }
 
-      // else take file path passed as is
-      // TODO: Validate file | check file extension | check if file exist
       if (!isAssetFile && !isRemoteFile) {
         _docxFile = File(docxTemplate);
       }
@@ -219,18 +214,12 @@ class DocxTpl {
         }
       }
 
-      // ignore: omit_local_variable_types
       ArchiveFile zippedFile = _zip.files.firstWhere(
         (zippedElement) => zippedElement.name == '[Content_Types].xml',
-        orElse: () => null,
+        //orElse: () => null,
       );
 
-      if (zippedFile == null) {
-        throw Exception('failed to read .docx template file passed');
-      }
-
       if (zippedFile.isFile) {
-        // ignore: omit_local_variable_types
         final String filename = zippedFile.name;
 
         final fileData = zippedFile.content as List<int>;
@@ -256,7 +245,6 @@ class DocxTpl {
 
           for (var contentTypePart in CONTENT_TYPES_PARTS) {
             if (type == contentTypePart) {
-              // checking
               var chunkResp = await __getTreeOfFile(file);
               _parts[chunkResp.first] = chunkResp.last;
             }
@@ -270,6 +258,8 @@ class DocxTpl {
           }
 
           for (var part in _parts.values) {
+            log(part.toString());
+
             // hunt for w:t text and check for simple templating {{<name>}}
             // TODO: Add more checking as word xml structure changes
             for (var parent in part.findAllElements(
@@ -301,7 +291,6 @@ class DocxTpl {
 
     // catch any errors
     catch (e) {
-      // TODO: Make detailed custom exeptions to return
       return MergeResponse(
         mergeStatus: MergeResponseStatus.Error,
         message: e.toString(),

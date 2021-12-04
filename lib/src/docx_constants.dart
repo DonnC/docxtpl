@@ -13,3 +13,5 @@ final CONTENT_TYPES_PARTS = [
 
 final CONTENT_TYPE_SETTINGS =
     'application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml';
+
+final bool isTestMode = true;
