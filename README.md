@@ -1,6 +1,6 @@
 # docxtpl
 
-a word document template plugin to easily populate and generate word documents from templates
+A word document template plugin to easily populate and generate word documents from templates
 
 ## screenshots
 <table>
