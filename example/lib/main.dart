@@ -227,8 +227,10 @@ class _MyHomePageState extends State<MyHomePage> {
             Text(
               'Generate document from asset .docx template',
             ),
-            FlatButton(
-              color: Colors.grey,
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.grey,
+              ),
               onPressed: () async => await generateDocumentFromAssetTpl(),
               child: Text('Generate from asset tpl'),
             ),
@@ -237,15 +239,19 @@ class _MyHomePageState extends State<MyHomePage> {
             Text(
               'Generate document from remote .docx template',
             ),
-            FlatButton(
-              color: Colors.grey,
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.grey,
+              ),
               onPressed: () async => await generateDocumentFromRemoteTpl(),
               child: Text('Generate from remote tpl'),
             ),
             SizedBox(height: 30),
             Divider(),
-            FlatButton(
-              color: Colors.grey,
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.grey,
+              ),
               onPressed: () async => await _pickTplFile(),
               child: Text('Generate from local .docx file'),
             ),
@@ -284,8 +290,10 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             SizedBox(height: 15),
-            FlatButton(
-              color: Colors.grey,
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.grey,
+              ),
               onPressed: () async => await openFile(),
               child: Text('Open generated file'),
             ),
