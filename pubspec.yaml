@@ -12,9 +12,9 @@ dependencies:
   flutter:
     sdk: flutter
 
-  http: ^0.12.2
-  archive: ^2.0.13
-  xml: ^4.5.1
+  http: ^0.13.5
+  archive: ^3.3.5
+  xml: ^6.1.0
   path: ^1.7.0
 
 dev_dependencies:
