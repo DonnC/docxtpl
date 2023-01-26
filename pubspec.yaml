@@ -1,7 +1,6 @@
 name: docxtpl
 description: a word document template plugin to easily populate and generate word documents from templates
 version: 0.0.1
-author: Donald Chinhuru<donnclab@gmail.com>
 homepage: https://github.com/DonnC/docxtpl
 
 environment:
