@@ -1,14 +1,13 @@
 import 'dart:io';
 
-import 'package:ext_storage/ext_storage.dart';
+import 'package:docxtpl/docxtpl.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
+// ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-
-import 'package:docxtpl/docxtpl.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,17 +23,17 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'DocxTpl Demo Page'),
+      home: const MyHomePage(title: 'DocxTpl Demo Page'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  const MyHomePage({Key? key, required this.title}) : super(key: key);
   final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -68,17 +67,17 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _pickTplFile() async {
     // android only
-    final directory = await ExtStorage.getExternalStorageDirectory();
+    final directory = await getExternalStorageDirectory();
 
-    String path = await FilesystemPicker.open(
+    String? path = await FilesystemPicker.open(
       title: 'Select .docx template',
       context: context,
-      rootDirectory: Directory(directory),
+      rootDirectory: directory!,
       fsType: FilesystemType.file,
       allowedExtensions: ['.docx'],
     );
 
-    await generateDocumentFromTpl(path);
+    // await generateDocumentFromTpl(path);
   }
 
   Future<void> askPermissions() async {
@@ -101,8 +100,8 @@ class _MyHomePageState extends State<MyHomePage> {
       loading = true;
     });
 
-    final directory = await ExtStorage.getExternalStorageDirectory();
-    var filename = path.join(directory, 'generated_tpl_local.docx');
+    final directory = await getExternalStorageDirectory();
+    var filename = path.join(directory!.path, 'generated_tpl_local.docx');
 
     var saveTo = await File(filename).create(recursive: true);
 
@@ -218,46 +217,49 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             loading
-                ? Center(
+                ? const Center(
                     child: Padding(
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.all(20),
                     child: CircularProgressIndicator(),
                   ))
-                : SizedBox.shrink(),
-            Text(
+                : const SizedBox.shrink(),
+            const Text(
               'Generate document from asset .docx template',
             ),
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.grey,
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.grey,
               ),
               onPressed: () async => await generateDocumentFromAssetTpl(),
-              child: Text('Generate from asset tpl'),
+              child: const Text('Generate from asset tpl'),
             ),
-            SizedBox(height: 30),
-            Divider(),
-            Text(
+            const SizedBox(height: 30),
+            const Divider(),
+            const Text(
               'Generate document from remote .docx template',
             ),
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.grey,
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.grey,
               ),
               onPressed: () async => await generateDocumentFromRemoteTpl(),
-              child: Text('Generate from remote tpl'),
+              child: const Text('Generate from remote tpl'),
             ),
-            SizedBox(height: 30),
-            Divider(),
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.grey,
+            const SizedBox(height: 30),
+            const Divider(),
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.grey,
               ),
               onPressed: () async => await _pickTplFile(),
-              child: Text('Generate from local .docx file'),
+              child: const Text('Generate from local .docx file'),
             ),
-            SizedBox(height: 30),
-            Divider(),
-            Text('Merge fields found'),
+            const SizedBox(height: 30),
+            const Divider(),
+            const Text('Merge fields found'),
             Wrap(
               children: mergeFields
                   .map(
@@ -272,7 +274,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           padding: const EdgeInsets.all(5.0),
                           child: Text(
                             field,
-                            style: TextStyle(color: Colors.white),
+                            style: const TextStyle(color: Colors.white),
                           ),
                         ),
                       ),
@@ -280,22 +282,23 @@ class _MyHomePageState extends State<MyHomePage> {
                   )
                   .toList(),
             ),
-            Text('Generated word document saved to:'),
+            const Text('Generated word document saved to:'),
             Text(
               savedFile,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.blue,
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            SizedBox(height: 15),
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.grey,
-              ),
+            const SizedBox(height: 15),
+            OutlinedButton(
               onPressed: () async => await openFile(),
-              child: Text('Open generated file'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.grey,
+              ),
+              child: const Text('Open generated file'),
             ),
           ],
         ),
