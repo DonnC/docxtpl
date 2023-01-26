@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/foundation.dart';
 import 'package:archive/archive.dart';
 import 'package:archive/archive_io.dart';
@@ -14,7 +15,7 @@ import 'tpl_utils.dart';
 /// main [DocxTpl] class
 class DocxTpl {
   /// .docx file path, can be file path or url to the .docx file
-  final String docxTemplate;
+  final  String? docxTemplate;
 
   /// indicate whether [docxTemplate] is a remote url file path or a local file
   final bool isRemoteFile;
@@ -23,13 +24,13 @@ class DocxTpl {
   final bool isAssetFile;
 
   /// internal zip file object of the read .docx file
-  Archive _zip;
+  late Archive _zip;
 
   /// hold docxFile obj
-  File _docxFile;
+  late File _docxFile;
 
   /// hold temp directory path
-  Directory _dir;
+  late Directory _dir;
 
   /// hold xml document
   Map<dynamic, XmlDocument> _parts = Map<dynamic, XmlDocument>();
@@ -56,11 +57,11 @@ class DocxTpl {
 
   // ignore: always_declare_return_types
   Future<List> __getTreeOfFile(XmlElement file) async {
-    var type = file.getAttribute('PartName');
+    var type = file.getAttribute('PartName')!;
 
     var innerFile = type.replaceFirst('/', '');
 
-    var zi = _zip.findFile(innerFile);
+    var zi = _zip.findFile(innerFile)!;
 
     final ziFileData = zi.content as List<int>;
 
@@ -113,7 +114,7 @@ class DocxTpl {
   }
 
   /// write all fields with provided data
-  Future<void> writeMergeFields({@required Map<String, dynamic> data}) async {
+  Future<void> writeMergeFields({required Map<String, dynamic> data}) async {
     // TODO: Validate data keys must be equal and same with [mergedFields] values
 
     // get all merge fields extracted and replace with user data
@@ -147,7 +148,7 @@ class DocxTpl {
 
     // TODO: First check if file exists in dir and override it
     // grab the root document already changed by calling [element.innerText] = '<new-data>' while replacing fields above
-    var documentXmlRootDoc = elementTags.first.root.root.document;
+    var documentXmlRootDoc = elementTags.first.root.root.document!;
 
     // grab xml as is without pretty printed
     var xml = documentXmlRootDoc.toXmlString();
@@ -164,7 +165,7 @@ class DocxTpl {
     try {
       if (isRemoteFile) {
         // download file first
-        var result = await docxRemoteFileDownloader(_dir.path, docxTemplate);
+        var result = await docxRemoteFileDownloader(_dir.path, docxTemplate!);
 
         if (result is File) {
           // template downloaded successfuly
@@ -179,7 +180,7 @@ class DocxTpl {
       }
 
       if (isAssetFile) {
-        var result = await saveAssetTpl(_dir.path, docxTemplate);
+        var result = await saveAssetTpl(_dir.path, docxTemplate!);
 
         if (result is File) {
           // template loaded successfuly
@@ -195,7 +196,7 @@ class DocxTpl {
       // else take file path passed as is
       // TODO: Validate file | check file extension | check if file exist
       if (!isAssetFile && !isRemoteFile) {
-        _docxFile = File(docxTemplate);
+        _docxFile = File(docxTemplate!);
       }
 
       final bytes = _docxFile.readAsBytesSync();
@@ -220,9 +221,8 @@ class DocxTpl {
       }
 
       // ignore: omit_local_variable_types
-      ArchiveFile zippedFile = _zip.files.firstWhere(
+      ArchiveFile? zippedFile = _zip.files.firstWhereOrNull(
         (zippedElement) => zippedElement.name == '[Content_Types].xml',
-        orElse: () => null,
       );
 
       if (zippedFile == null) {

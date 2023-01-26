@@ -19,7 +19,7 @@ List<String> templateParse(String text) {
   else {
     for (var match in matches) {
       int group = match.groupCount;
-      String field = match.group(group);
+      String field = match.group(group)!;
 
       // remove templating braces
       var firstChunk = field.replaceAll('{{', '').trim();

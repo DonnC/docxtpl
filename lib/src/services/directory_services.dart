@@ -3,7 +3,7 @@ import 'package:path/path.dart' as path;
 
 /// loop through temp dir and search for file
 /// if file present return its File object
-Future<File> searchDir(Directory dir, String fileSegment) async {
+Future<File?> searchDir(Directory dir, String fileSegment) async {
   // file seperator differs
   // adopt to system's seperator
   var seperator = path.separator;
