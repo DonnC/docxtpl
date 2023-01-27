@@ -1,21 +1,23 @@
 name: docxtpl
 description: a word document template plugin to easily populate and generate word documents from templates
 version: 0.0.1
-author: Donald Chinhuru<donnclab@gmail.com>
 homepage: https://github.com/DonnC/docxtpl
+funding:
+ - https://www.paypal.me/donnclab
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: '>=2.12.0 <3.0.0'
   flutter: ">=1.17.0"
 
 dependencies:
   flutter:
     sdk: flutter
 
-  http: ^0.12.2
-  archive: ^2.0.13
-  xml: ^4.5.1
-  path: ^1.7.0
+  http: ^0.13.5
+  archive: ^3.3.5
+  xml: ^6.1.0
+  path: ^1.8.2
+  collection: ^1.15.0-nullsafety.4
 
 dev_dependencies:
   flutter_test:
