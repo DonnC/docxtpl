@@ -1,11 +1,9 @@
 import 'dart:io';
 
-import 'package:collection/collection.dart' show IterableExtension;
-import 'package:flutter/foundation.dart';
-import 'package:archive/archive.dart';
 import 'package:archive/archive_io.dart';
-import 'package:xml/xml.dart';
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:path/path.dart' as path;
+import 'package:xml/xml.dart';
 
 import 'docx_constants.dart';
 import 'models/tpl_response.dart';
@@ -15,7 +13,7 @@ import 'tpl_utils.dart';
 /// main [DocxTpl] class
 class DocxTpl {
   /// .docx file path, can be file path or url to the .docx file
-  final  String? docxTemplate;
+  final String? docxTemplate;
 
   /// indicate whether [docxTemplate] is a remote url file path or a local file
   final bool isRemoteFile;
