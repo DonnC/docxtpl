@@ -43,9 +43,9 @@ class DocxTpl {
   var _settingsInfo;
 
   DocxTpl({
-    this.docxTemplate,
-    this.isAssetFile: false,
-    this.isRemoteFile: false,
+    required this.docxTemplate,
+    this.isAssetFile = false,
+    this.isRemoteFile = false,
   }) {
     // get temp dir and save it once
     _dir = tempDir();
@@ -299,7 +299,7 @@ class DocxTpl {
 
     // catch any errors
     catch (e) {
-      // TODO: Make detailed custom exeptions to return
+      // TODO: Make detailed custom exceptions to return
       return MergeResponse(
         mergeStatus: MergeResponseStatus.Error,
         message: e.toString(),
