@@ -5,21 +5,14 @@ import 'package:collection/collection.dart' show IterableExtension;
 import 'package:path/path.dart' as path;
 import 'package:xml/xml.dart';
 
+import '../docxtpl.dart';
 import 'docx_constants.dart';
-import 'models/tpl_response.dart';
 import 'services/index.dart';
-import 'tpl_utils.dart';
 
 /// main [DocxTpl] class
 class DocxTpl {
   /// .docx file path, can be file path or url to the .docx file
   final String? docxTemplate;
-
-  /// indicate whether [docxTemplate] is a remote url file path or a local file
-  final bool isRemoteFile;
-
-  /// indicate whether [docxTemplate] is from flutter assets folder
-  final bool isAssetFile;
 
   /// internal zip file object of the read .docx file
   late Archive _zip;
@@ -38,14 +31,12 @@ class DocxTpl {
   /// hold merge fields extracted from the document
   List<String> mergedFields = [];
 
-  var _settings;
+  XmlDocument? _settings;
 
-  var _settingsInfo;
+  ArchiveFile? _settingsInfo;
 
   DocxTpl({
     required this.docxTemplate,
-    this.isAssetFile = false,
-    this.isRemoteFile = false,
   }) {
     // get temp dir and save it once
     _dir = tempDir();
@@ -306,4 +297,23 @@ class DocxTpl {
       );
     }
   }
+
+  DocxTemplateSource get templateSource {
+    if (docxTemplate == null) {
+      throw ArgumentError('docxTemplate cannot be null');
+    }
+
+    if (docxTemplate!.startsWith('http://') ||
+        docxTemplate!.startsWith('https://')) {
+      return DocxTemplateSource.remote;
+    } else if (!docxTemplate!.startsWith('/')) {
+      return DocxTemplateSource.asset;
+    } else {
+      return DocxTemplateSource.local;
+    }
+  }
+
+  bool get isRemoteFile => templateSource == DocxTemplateSource.remote;
+  bool get isAssetFile => templateSource == DocxTemplateSource.asset;
+  bool get isLocalFile => templateSource == DocxTemplateSource.local;
 }
