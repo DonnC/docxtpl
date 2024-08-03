@@ -6,3 +6,9 @@ enum MergeResponseStatus {
   Error,
 }
 
+/// Enum to determine the source of the template
+enum DocxTemplateSource {
+  remote,
+  asset,
+  local,
+}
