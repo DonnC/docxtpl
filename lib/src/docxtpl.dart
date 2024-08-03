@@ -118,7 +118,7 @@ class DocxTpl {
       // replace field with proper data in elText
       for (var element in elementTags) {
         // grab the text to check templating {{..}} and change field
-        var elText = element.text;
+        var elText = element.innerText;
 
         // only change proper templated fields  {{..}} and leave the rest as is
         if (elText.contains(RegExp(
@@ -273,7 +273,7 @@ class DocxTpl {
             // loop through the _instrTextChildren
             for (var instrChild in _instrTextChildren) {
               // extract merge-field
-              var chunkResult = templateParse(instrChild.text);
+              var chunkResult = templateParse(instrChild.innerText);
 
               /// add merge fields to list
               mergedFields..addAll(chunkResult);
