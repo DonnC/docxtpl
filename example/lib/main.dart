@@ -143,7 +143,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final DocxTpl docxTpl = DocxTpl(
       docxTemplate: 'assets/invite.docx',
-      isAssetFile: true,
     );
 
     var r = await docxTpl.parseDocxTpl();
@@ -180,7 +179,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final DocxTpl docxTpl = DocxTpl(
       docxTemplate: remoteTpl,
-      isRemoteFile: true,
     );
 
     var r = await docxTpl.parseDocxTpl();
