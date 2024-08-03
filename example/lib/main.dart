@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:docxtpl/docxtpl.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:open_file/open_file.dart';
+import 'package:open_filex/open_filex.dart';
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
@@ -88,7 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future openFile() async {
     try {
-      await OpenFile.open(savedFile);
+      await OpenFilex.open(savedFile);
     } catch (e) {
       // error
       print('[ERROR] Failed to open file: $savedFile');
