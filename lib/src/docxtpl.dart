@@ -67,12 +67,44 @@ class DocxTpl {
     return [zi, parsedZi];
   }
 
-  /// get all extracted merge fields from .docx to use to fill data in
+  /// Retrieves a list of unique merge fields extracted from the .docx template.
+  ///
+  /// This method returns all merge fields found in the document template,
+  /// eliminating any duplicates. Merge fields are placeholders in the document
+  /// that can be filled with actual data.
+  ///
+  /// Returns:
+  ///   A [List<String>] containing unique merge field names.
+  ///
+  /// Example:
+  ///   If the document contains fields like ${name}, ${age}, ${name}, ${address},
+  ///   this method will return ['name', 'age', 'address'].
+  ///
+  /// Note:
+  ///   The returned list is created from a [Set], so the order of fields
+  ///   may not match their order of appearance in the document.
   List<String> getMergeFields() {
     return mergedFields.toSet().toList();
   }
 
-  /// write all changes and save, returns String path to file
+  /// Saves the modified document to a specified file path.
+  ///
+  /// This method creates a new .docx file (which is essentially a zip file)
+  /// at the specified [filepath], copying over all the files from the original
+  /// document template, including any modifications made during the merge process.
+  ///
+  /// Parameters:
+  ///   [filepath] - The full path where the new document should be saved.
+  ///
+  /// Returns:
+  ///   A [Future<String>] that completes with the path of the saved file.
+  ///
+  /// Throws:
+  ///   May throw I/O related exceptions if file operations fail.
+  ///
+  /// Note:
+  ///   This method performs several file system operations and should be
+  ///   called asynchronously.
   Future<String> save(String filepath) async {
     File(filepath)..createSync(recursive: true);
 
@@ -81,11 +113,10 @@ class DocxTpl {
     zipF.create(filepath);
 
     for (var zi in _zip.files) {
-      // write back all zi.name == tempDir files to new word doc
+      // Write back all zi.name == tempDir files to new word doc
       var ziName = zi.name;
 
-      // search for file and return its file object
-      //print('===== directory: ${_dir.path} | ziName: $ziName');
+      // Search for file and return its file object
       var _file = await searchDir(_dir, ziName);
 
       if (_file != null) {
@@ -93,75 +124,99 @@ class DocxTpl {
       }
     }
 
-    // close zip object
+    // Close zip object
     zipF.close();
 
-    // clean up
+    // Clean up
     await deleteTempDir(_dir);
 
     return zipF.zipPath;
   }
 
-  /// write all fields with provided data
+  /// Writes the provided data to the merge fields in the document.
+  ///
+  /// This method replaces all merge fields in the document with the corresponding
+  /// values provided in the [data] map.
+  ///
+  /// Parameters:
+  ///   [data] - A map where keys are merge field names and values are the data
+  ///            to be inserted into those fields.
+  ///
+  /// Throws:
+  ///   May throw exceptions if file operations fail.
+  ///
+  /// Note:
+  ///   This method performs file I/O operations and should be called asynchronously.
   Future<void> writeMergeFields({required Map<String, dynamic> data}) async {
-    // TODO: Validate data keys must be equal and same with [mergedFields] values
-
-    // get all merge fields extracted and replace with user data
+    // Get all merge fields extracted and replace with user data
     var fields = getMergeFields();
 
-    // remove any duplicates if any
+    // Check if all fields are in data
+    if (!fields.same(data.keys.toList())) {
+      throw ArgumentError('Data should contain all merge fields');
+    }
+
+    // Remove any duplicates if any
     var elementTagSet = _instrTextChildren.toSet();
 
     var elementTags = elementTagSet.toList();
 
     for (var field in fields) {
-      // replace field with proper data in elText
+      // Replace field with proper data in elText
       for (var element in elementTags) {
-        // grab the text to check templating {{..}} and change field
+        // Grab the text to check templating {{..}} and change field
         var elText = element.innerText;
 
-        // only change proper templated fields  {{..}} and leave the rest as is
+        // Only change proper templated fields  {{..}} and leave the rest as is
         if (elText.contains(RegExp(
           '{{\\w*}}',
           caseSensitive: true,
           multiLine: true,
         ))) {
-          // replace field with data passed by user
+          // Replace field with data passed by user
           var rep = elText.replaceAll(RegExp('{{$field}}'), data[field]);
           element.innerText = rep;
         }
       }
     }
 
-    // grab any element's root note and save to disk
-
-    // TODO: First check if file exists in dir and override it
-    // grab the root document already changed by calling [element.innerText] = '<new-data>' while replacing fields above
+    // Grab any element's root note and save to disk
+    // Grab the root document already changed by calling [element.innerText] = '<new-data>' while replacing fields above
     var documentXmlRootDoc = elementTags.first.root.root.document!;
 
-    // grab xml as is without pretty printed
+    // Grab xml as is without pretty printed
     var xml = documentXmlRootDoc.toXmlString();
 
-    // write document to temp dir file
+    // Write document to temp dir file
     var docXml = path.join(_dir.path, 'word', 'document.xml');
 
     File _docXmlFile = await File(docXml).create(recursive: true);
     await _docXmlFile.writeAsString(xml);
   }
 
-  /// process word document template passed, if [isRemoteFile] is true, it downloads to temp dir and processes the file
+  /// Parses the DOCX template file and prepares it for merge field replacement.
+  ///
+  /// This method handles different sources of the DOCX file (remote, asset, or local),
+  /// extracts its contents, and identifies merge fields within the document.
+  ///
+  /// Returns:
+  ///   A [Future<MergeResponse>] indicating the success or failure of the parsing operation.
+  ///
+  /// Throws:
+  ///   May throw exceptions for various reasons, including file download failures,
+  ///   file reading errors, or invalid document structure.
   Future<MergeResponse> parseDocxTpl() async {
     try {
       if (isRemoteFile) {
-        // download file first
+        // Download file first
         var result = await docxRemoteFileDownloader(_dir.path, docxTemplate!);
 
         if (result is File) {
-          // template downloaded successfuly
+          // Template downloaded successfuly
           _docxFile = result;
         }
 
-        // error downloading remote tpl file
+        // Error downloading remote tpl file
         else {
           throw Exception(
               'error downloading remote .docx template file: ' + result);
@@ -172,30 +227,33 @@ class DocxTpl {
         var result = await saveAssetTpl(_dir.path, docxTemplate!);
 
         if (result is File) {
-          // template loaded successfuly
+          // Template loaded successfully
           _docxFile = result;
         }
 
-        // error loading asset tpl file
+        // Error loading asset tpl file
         else {
           throw Exception('error loading asset .docx template file: ' + result);
         }
       }
 
-      // else take file path passed as is
-      // TODO: Validate file | check file extension | check if file exist
-      if (!isAssetFile && !isRemoteFile) {
-        _docxFile = File(docxTemplate!);
+      if (isLocalFile) {
+        // TODO: Validate file | check file extension
+        if (File(docxTemplate!).existsSync()) {
+          _docxFile = File(docxTemplate!);
+        } else {
+          throw Exception('file does not exist');
+        }
       }
 
       final bytes = _docxFile.readAsBytesSync();
 
       _zip = ZipDecoder().decodeBytes(bytes);
 
-      // save all files to temp dir
+      // Save all files to temp dir
       for (var zipInnerFile in _zip.files) {
         if (zipInnerFile.isFile) {
-          // write file to temp dir
+          // Write file to temp dir
           final innerFname = zipInnerFile.name;
 
           var fname = innerFname.replaceAll('/', path.separator);
@@ -226,14 +284,14 @@ class DocxTpl {
 
         var contentFname = path.join(_dir.path, filename);
 
-        // save file temporarily
+        // Save file temporarily
         var _tempFile = await File(contentFname).create(recursive: true);
         await _tempFile.writeAsBytes(fileData);
 
-        // begin parsing xml document
+        // Begin parsing xml document
         final contentTypes = XmlDocument.parse(_tempFile.readAsStringSync());
 
-        // loop through xml document to check required data
+        // Loop through xml document to check required data
         for (var file in contentTypes.findAllElements(
           'Override',
           namespace: "${NAMESPACES['ct']}",
@@ -245,13 +303,13 @@ class DocxTpl {
 
           for (var contentTypePart in CONTENT_TYPES_PARTS) {
             if (type == contentTypePart) {
-              // checking
+              // Checking
               var chunkResp = await __getTreeOfFile(file);
               _parts[chunkResp.first] = chunkResp.last;
             }
           }
 
-          // check in another
+          // Check in another
           if (type == CONTENT_TYPE_SETTINGS) {
             var chunkResp = await __getTreeOfFile(file);
             _settingsInfo = chunkResp.first;
@@ -259,7 +317,7 @@ class DocxTpl {
           }
 
           for (var part in _parts.values) {
-            // hunt for w:t text and check for simple templating {{<name>}}
+            // Hunt for w:t text and check for simple templating {{<name>}}
             // TODO: Add more checking as word xml structure changes
             for (var parent in part.findAllElements(
               'w:t',
@@ -267,15 +325,13 @@ class DocxTpl {
               _instrTextChildren.add(parent);
             }
 
-            // use unique fields
+            // Use unique fields
             _instrTextChildren.toSet().toList();
 
-            // loop through the _instrTextChildren
+            // Loop through the _instrTextChildren
             for (var instrChild in _instrTextChildren) {
-              // extract merge-field
+              // Extract merge-field
               var chunkResult = templateParse(instrChild.innerText);
-
-              /// add merge fields to list
               mergedFields..addAll(chunkResult);
             }
           }
@@ -286,10 +342,7 @@ class DocxTpl {
         mergeStatus: MergeResponseStatus.Success,
         message: 'success',
       );
-    }
-
-    // catch any errors
-    catch (e) {
+    } catch (e) {
       // TODO: Make detailed custom exceptions to return
       return MergeResponse(
         mergeStatus: MergeResponseStatus.Error,
