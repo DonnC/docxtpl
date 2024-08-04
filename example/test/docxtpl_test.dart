@@ -1,6 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
-
 import 'package:docxtpl/docxtpl.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +17,6 @@ void main() {
   test('generate .docx from asset', () async {
     final DocxTpl docxTpl = DocxTpl(
       docxTemplate: 'assets/invite.docx',
-      isAssetFile: true,
     );
 
     var r = await docxTpl.parseDocxTpl();
